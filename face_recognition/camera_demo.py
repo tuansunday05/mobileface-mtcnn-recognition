@@ -13,9 +13,9 @@ import configparser
 import time
 
 from nets.mtcnn_model import P_Net, R_Net, O_Net
-from Detection.MtcnnDetector import MtcnnDetector
-from Detection.detector import Detector
-from Detection.fcn_detector import FcnDetector
+from detection.MtcnnDetector import MtcnnDetector
+from detection.detector import Detector
+from detection.fcn_detector import FcnDetector
 
 gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.9)
 config = tf.ConfigProto(gpu_options=gpu_options)
@@ -139,7 +139,7 @@ def draw_rect(faces, names, sims, image):
         cv2.putText(image, label, (x,y), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
 
 def main():
-    cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture(2)
 
     conf = configparser.ConfigParser()
     conf.read("config/main.cfg")
