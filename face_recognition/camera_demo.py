@@ -21,7 +21,7 @@ gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.9)
 config = tf.ConfigProto(gpu_options=gpu_options)
 config.gpu_options.allow_growth=True
 # sess = tf.Session(config=config)
-os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
+# os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
 
 def load_mtcnn(conf):
     # load mtcnn model
@@ -149,19 +149,18 @@ def main():
     VERIFICATION_THRESHOLD = float(conf.get("MOBILEFACENET", "VERIFICATION_THRESHOLD"))
     FACE_DB_PATH = conf.get("MOBILEFACENET", "FACE_DB_PATH")
     faces_db = load_faces(FACE_DB_PATH, mtcnn_detector)
-    # fps calculation
-    start_time = time.time()
-    frame_count = 0
+
+
     with tf.Graph().as_default():
-        with tf.Session() as sess:
+        with tf.Session(config=config) as sess:
             load_mobilefacenet(MODEL_PATH)
             inputs_placeholder = tf.get_default_graph().get_tensor_by_name("input:0")
             embeddings = tf.get_default_graph().get_tensor_by_name("embeddings:0")
+            fps = 0
             while True:
                 # fps calculation
-                frame_count += 1
-                elapsed_time = time.time() - start_time
-                fps = frame_count / elapsed_time
+                prev_frame_time = time.time()
+                new_frame_time = 0
 
                 ret, frame = cap.read()
                 if ret:
@@ -174,7 +173,7 @@ def main():
                                 points = landmarks[i,:].reshape((5,2))
                                 nimg = face_preprocess.preprocess(frame, bbox, points, image_size='112,112')
 
-                                cv2.imshow("face", nimg)
+                                # cv2.imshow("face", nimg)
                                 nimg = nimg - 127.5
                                 nimg = nimg * 0.0078125
                                 # input_image = np.expand_dims(nimg, axis=0)
@@ -188,7 +187,7 @@ def main():
                             embedding = embedding.flatten()
                             temp_dict = {}
                             for com_face in faces_db:
-                                ret, sim = feature_compare(embedding, com_face["feature"], 0.65)
+                                ret, sim = feature_compare(embedding, com_face["feature"], 0.6)
                                 temp_dict[com_face["name"]] = sim
                             dict = sorted(temp_dict.items(), key=lambda d: d[1], reverse=True)
                             if dict[0][1] > VERIFICATION_THRESHOLD:
@@ -206,9 +205,14 @@ def main():
                             y2 = min(int(y2), frame.shape[0])
                             cv2.rectangle(frame, (x1, y1), (x2, y2), (255, 0, 0), 2)
                         draw_rect(faces, names, sims, frame)
+                        # fps
+                        new_frame_time = time.time()
+                        fps = 1/(new_frame_time-prev_frame_time)
+                        prev_frame_time = new_frame_time
+
                     cv2.imshow("frame", frame)
-                    if cv2.waitKey(1) & 0xFF == ord('q'):
-                        break
+                    # if cv2.waitKey(1) & 0xFF == ord('q'):
+                    #     break
                     # Display FPS on the frame
                     cv2.putText(frame, f'FPS: {fps:.2f}', (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
                     cv2.imshow("frame", frame)
