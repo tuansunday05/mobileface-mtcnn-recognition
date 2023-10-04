@@ -156,13 +156,13 @@ def main():
             load_mobilefacenet(MODEL_PATH)
             inputs_placeholder = tf.get_default_graph().get_tensor_by_name("input:0")
             embeddings = tf.get_default_graph().get_tensor_by_name("embeddings:0")
-            fps = 0
             while True:
+                ret, frame = cap.read()
                 # fps calculation
+                fps = 0
                 prev_frame_time = time.time()
                 new_frame_time = 0
-
-                ret, frame = cap.read()
+                
                 if ret:
                     faces,landmarks = mtcnn_detector.detect(frame)
                     if faces.shape[0] is not 0:
@@ -172,7 +172,6 @@ def main():
                                 bbox = faces[i,0:4]
                                 points = landmarks[i,:].reshape((5,2))
                                 nimg = face_preprocess.preprocess(frame, bbox, points, image_size='112,112')
-
                                 # cv2.imshow("face", nimg)
                                 nimg = nimg - 127.5
                                 nimg = nimg * 0.0078125
@@ -210,9 +209,6 @@ def main():
                         fps = 1/(new_frame_time-prev_frame_time)
                         prev_frame_time = new_frame_time
 
-                    cv2.imshow("frame", frame)
-                    # if cv2.waitKey(1) & 0xFF == ord('q'):
-                    #     break
                     # Display FPS on the frame
                     cv2.putText(frame, f'FPS: {fps:.2f}', (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
                     cv2.imshow("frame", frame)
