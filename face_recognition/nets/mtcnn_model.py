@@ -1,8 +1,11 @@
 #coding:utf-8
-import tensorflow as tf
-from tensorflow.contrib import slim
-from tensorflow.contrib.tensorboard.plugins import projector
+import tensorflow.compat.v1 as tf
+import tf_slim as slim
+from tensorboard.plugins import projector
 import numpy as np
+
+tf.disable_v2_behavior()
+
 num_keep_radio = 0.7
 #define prelu
 def prelu(inputs):

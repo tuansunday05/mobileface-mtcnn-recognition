@@ -2,7 +2,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import tensorflow as tf
 import numpy as np
 import re
 import os
@@ -16,6 +15,9 @@ from nets.mtcnn_model import P_Net, R_Net, O_Net
 from Detection.MtcnnDetector import MtcnnDetector
 from Detection.detector import Detector
 from Detection.fcn_detector import FcnDetector
+import tensorflow.compat.v1 as tf
+
+tf.disable_v2_behavior()
 
 gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.9)
 config = tf.ConfigProto(gpu_options=gpu_options)
