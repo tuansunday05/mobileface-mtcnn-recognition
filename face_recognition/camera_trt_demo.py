@@ -16,18 +16,21 @@ from Detection.MtcnnDetector import MtcnnDetector
 from Detection.detector import Detector
 from Detection.fcn_detector import FcnDetector
 import tensorflow.compat.v1 as tf
-import engine as eng
+from ConvertTensorRT import engine as eng
 import inference as inf
 import tensorrt as trt 
 
 tf.disable_v2_behavior()
 
+def init_runtime():
+    TRT_LOGGER = trt.Logger(trt.Logger.INTERNAL_ERROR)
+    trt_runtime = trt.Runtime(TRT_LOGGER)
+    return trt_runtime
 
-TRT_LOGGER = trt.Logger(trt.Logger.INTERNAL_ERROR)
-trt_runtime = trt.Runtime(TRT_LOGGER)
-engine_path = "./models/tensorRT/MobileFacenet_engine.plan"
-HEIGHT = 112
-WIDTH = 112
+
+
+# HEIGHT = 112
+# WIDTH = 112
 
 
 
@@ -112,7 +115,7 @@ def load_faces(faces_dir, mtcnn_detector):
     return face_db
 
 def feature_compare(feature1, feature2, threshold):
-    dist = np.sum(np.square(feature1- feature2))
+    # dist = np.sum(np.square(feature1- feature2))
     sim = np.dot(feature1, feature2.T)
     if sim > threshold:
         return True, sim
@@ -159,18 +162,17 @@ def main():
     conf.read("config/main.cfg")
 
     mtcnn_detector = load_mtcnn(conf)
-    MODEL_PATH = conf.get("MOBILEFACENET", "MODEL_PATH")
+    ENGINE_PATH = conf.get("MOBILEFACENET","ENGINE_PATH")
     VERIFICATION_THRESHOLD = float(conf.get("MOBILEFACENET", "VERIFICATION_THRESHOLD"))
     FACE_DB_PATH = conf.get("MOBILEFACENET", "FACE_DB_PATH")
-    faces_db = load_faces(FACE_DB_PATH, mtcnn_detector)
 
+    faces_db = load_faces(FACE_DB_PATH, mtcnn_detector)
+    trt_runtime = init_runtime()
 
     with tf.Graph().as_default():
-        with eng.load_engine(trt_runtime, engine_path) as engine:
-            h_input, d_input, h_output, d_output, stream = inf.allocate_buffers(engine, 1, trt.float32)
-
+        with eng.load_engine(trt_runtime, ENGINE_PATH) as engine:
             inputs_placeholder = tf.get_default_graph() #.get_tensor_by_name("input:0")
-            embeddings = tf.get_default_graph() #.get_tensor_by_name("embeddings:0")
+            # embeddings = tf.get_default_graph() #.get_tensor_by_name("embeddings:0")
             while True:
                 ret, frame = cap.read()
                 # fps calculation
@@ -193,8 +195,8 @@ def main():
                                 # input_image = np.expand_dims(nimg, axis=0)
                                 input_images[i,:] = nimg
                         feed_dict = {inputs_placeholder: input_images}
-                        # emb_arrays = sess.run(embeddings, feed_dict=feed_dict)
-                        emb_arrays = inf.do_inference(engine, feed_dict[inputs_placeholder], h_input, d_input, h_output, d_output, stream, 1, HEIGHT, WIDTH)
+                        h_input, d_input, h_output, d_output, stream = inf.allocate_buffers(engine, len(faces), trt.float32)
+                        emb_arrays = inf.do_inference(engine, feed_dict[inputs_placeholder], h_input, d_input, h_output, d_output, stream, batch_size=len(faces)) # , HEIGHT, WIDTH
 
                         emb_arrays = sklearn.preprocessing.normalize(emb_arrays)
                         names = []

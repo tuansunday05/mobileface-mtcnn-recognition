@@ -1,7 +1,7 @@
 import tensorrt as trt
 
 TRT_LOGGER = trt.Logger(trt.Logger.INTERNAL_ERROR)
-def build_engine(onnx_path, shape = [1,224,224,3]):
+def build_engine(onnx_path, shape = [32,112,112,3]):
 
    """
    This is the function to create the TensorRT engine
@@ -11,8 +11,11 @@ def build_engine(onnx_path, shape = [1,224,224,3]):
   """
    with trt.Builder(TRT_LOGGER) as builder, builder.create_network(1) as network, trt.OnnxParser(network, TRT_LOGGER) as parser:
        builder_config = builder.create_builder_config()
-       builder_config.max_workspace_size = 1 << 30
-       builder.max_batch_size = 1
+       builder_config.max_workspace_size = 1 << 32
+       builder.max_batch_size = 32
+      #  builder_config.set_flag(trt.BuilderFlag.FP32)
+      #  builder_config.set_flag(trt.BuilderFlag.STRICT_TYPES)
+
     #    builder.max_workspace_size = (256 << 20)
        with open(onnx_path, 'rb') as model:
            parser.parse(model.read())

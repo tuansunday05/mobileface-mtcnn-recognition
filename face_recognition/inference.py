@@ -36,7 +36,7 @@ def load_images_to_buffer(pics, pagelocked_buffer):
    preprocessed = np.asarray(pics).ravel()
    np.copyto(pagelocked_buffer, preprocessed) 
 
-def do_inference(engine, pics_1, h_input_1, d_input_1, h_output, d_output, stream, batch_size, height, width):
+def do_inference(engine, pics_1, h_input_1, d_input_1, h_output, d_output, stream, batch_size): # , , height, width
    """
    This is the function to run the inference
    Args:
@@ -67,7 +67,7 @@ def do_inference(engine, pics_1, h_input_1, d_input_1, h_output, d_output, strea
       #  print('load profiler')
        context.profiler = trt.Profiler()
       #  print('execute')
-       context.execute(batch_size=1, bindings=[int(d_input_1), int(d_output)])
+       context.execute(batch_size=batch_size, bindings=[int(d_input_1), int(d_output)])
       #  print('Transfer predictions back from the GPU.')
        # Transfer predictions back from the GPU.
        cuda.memcpy_dtoh_async(h_output, d_output, stream)
@@ -75,5 +75,5 @@ def do_inference(engine, pics_1, h_input_1, d_input_1, h_output, d_output, strea
        stream.synchronize()
        # Return the host output.
       #  print(h_output.shape)
-       out = h_output.reshape((1,-1))
+       out = h_output.reshape((batch_size,-1))
        return out 
