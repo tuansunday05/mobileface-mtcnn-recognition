@@ -18,12 +18,13 @@ from Detection.fcn_detector import FcnDetector
 import tensorflow.compat.v1 as tf
 
 tf.disable_v2_behavior()
+def configure_gpu():
+    gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.9)
+    config = tf.ConfigProto(gpu_options=gpu_options)
+    config.gpu_options.allow_growth=True
+    # os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
+    return config
 
-gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.9)
-config = tf.ConfigProto(gpu_options=gpu_options)
-config.gpu_options.allow_growth=True
-# sess = tf.Session(config=config)
-# os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
 
 def load_mtcnn(conf):
     # load mtcnn model
@@ -69,6 +70,7 @@ def load_mobilefacenet(model):
 
 def load_faces(faces_dir, mtcnn_detector):
     face_db = []
+    config = configure_gpu()
     with tf.Graph().as_default():
         with tf.Session(config=config) as sess:
             load_mobilefacenet("./models/mobilefacenet_model/MobileFaceNet_9925_9680.pb")
@@ -145,13 +147,12 @@ def main():
 
     conf = configparser.ConfigParser()
     conf.read("config/main.cfg")
-
+    config = configure_gpu()
     mtcnn_detector = load_mtcnn(conf)
     MODEL_PATH = conf.get("MOBILEFACENET", "MODEL_PATH")
     VERIFICATION_THRESHOLD = float(conf.get("MOBILEFACENET", "VERIFICATION_THRESHOLD"))
     FACE_DB_PATH = conf.get("MOBILEFACENET", "FACE_DB_PATH")
     faces_db = load_faces(FACE_DB_PATH, mtcnn_detector)
-
 
     with tf.Graph().as_default():
         with tf.Session(config=config) as sess:

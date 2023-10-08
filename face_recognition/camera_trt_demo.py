@@ -28,18 +28,6 @@ def init_runtime():
     return trt_runtime
 
 
-
-# HEIGHT = 112
-# WIDTH = 112
-
-
-
-gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.9)
-config = tf.ConfigProto(gpu_options=gpu_options)
-config.gpu_options.allow_growth=True
-# sess = tf.Session(config=config)
-# os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
-
 def load_mtcnn(conf):
     # load mtcnn model
     MODEL_PATH = conf.get("MTCNN", "MODEL_PATH")
@@ -82,14 +70,11 @@ def load_mobilefacenet(model):
         saver = tf.train.import_meta_graph(os.path.join(model_exp, meta_file))
         saver.restore(tf.get_default_session(), os.path.join(model_exp, ckpt_file))
 
-def load_faces(faces_dir, mtcnn_detector):
+def load_faces(faces_dir, mtcnn_detector, engine = None):
     face_db = []
     with tf.Graph().as_default():
-        with tf.Session(config=config) as sess:
-            load_mobilefacenet("./models/mobilefacenet_model/MobileFaceNet_9925_9680.pb")
-            inputs_placeholder = tf.get_default_graph().get_tensor_by_name("input:0")
-            embeddings = tf.get_default_graph().get_tensor_by_name("embeddings:0")
-
+        with engine:
+            inputs_placeholder = tf.get_default_graph()#.get_tensor_by_name("input:0")
             for root, dirs, files in os.walk(faces_dir):
                 for file in files:
                     input_image = cv2.imread(os.path.join(root, file))
@@ -105,9 +90,10 @@ def load_faces(faces_dir, mtcnn_detector):
                     input_image = np.expand_dims(nimg,axis=0)
 
                     feed_dict = {inputs_placeholder: input_image}
-                    emb_array = sess.run(embeddings, feed_dict=feed_dict)
-
+                    h_input, d_input, h_output, d_output, stream = inf.allocate_buffers(engine, len(faces), trt.float32)
+                    emb_array = inf.do_inference(engine, feed_dict[inputs_placeholder], h_input, d_input, h_output, d_output, stream, batch_size=len(faces))
                     embedding = sklearn.preprocessing.normalize(emb_array).flatten()
+
                     face_db.append({
                         "name": name,
                         "feature": embedding
@@ -165,14 +151,13 @@ def main():
     ENGINE_PATH = conf.get("MOBILEFACENET","ENGINE_PATH")
     VERIFICATION_THRESHOLD = float(conf.get("MOBILEFACENET", "VERIFICATION_THRESHOLD"))
     FACE_DB_PATH = conf.get("MOBILEFACENET", "FACE_DB_PATH")
-
-    faces_db = load_faces(FACE_DB_PATH, mtcnn_detector)
     trt_runtime = init_runtime()
+    engine =  eng.load_engine(trt_runtime, ENGINE_PATH)
+    faces_db = load_faces(FACE_DB_PATH, mtcnn_detector, engine = engine)
 
     with tf.Graph().as_default():
-        with eng.load_engine(trt_runtime, ENGINE_PATH) as engine:
-            inputs_placeholder = tf.get_default_graph() #.get_tensor_by_name("input:0")
-            # embeddings = tf.get_default_graph() #.get_tensor_by_name("embeddings:0")
+        with engine:
+            inputs_placeholder = tf.get_default_graph()
             while True:
                 ret, frame = cap.read()
                 # fps calculation
@@ -183,7 +168,7 @@ def main():
                 if ret:
                     faces,landmarks = mtcnn_detector.detect(frame)
                     if faces.shape[0] is not 0:
-                        input_images = np.zeros((faces.shape[0], 112,112,3))
+                        input_images = np.zeros((faces.shape[0], 112,112,3), dtype= np.float16)
                         for i, face in enumerate(faces):
                             if round(faces[i, 4], 6) > 0.95:
                                 bbox = faces[i,0:4]
