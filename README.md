@@ -8,6 +8,7 @@
 - tf_slim
 - scikit-learn
 - scikit-image
+- pycuda
 - tensorflow([and-cuda] optional)
 ## Face Recognition
 1. Copy yourself face images into face_db folder, ensure only one person in one image, and named the image using label name, eg: Aaron.jpg.
