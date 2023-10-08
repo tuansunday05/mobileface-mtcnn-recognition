@@ -3,8 +3,9 @@
 ## Requirements
 - python>=3.9 (Recommend 3.9.13)
 - opencv-python
-- numpy
+- numpy==1.23.1
 - scipy
+- tf_slim
 - scikit-learn
 - scikit-image
 - tensorflow([and-cuda] optional)
