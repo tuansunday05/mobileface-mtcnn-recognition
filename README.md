@@ -32,4 +32,5 @@ System specification: Xeon E3 1240, 16gb, GTX 1070
 3. [Face detection model: MTCNN](https://arxiv.org/abs/1604.02878)
 4. [MTCNN with Tensorflow](https://github.com/AITTSMD/MTCNN-Tensorflow)
 5. [TensorRT runtime](https://docs.nvidia.com/deeplearning/frameworks/tf-trt-user-guide/index.html?fbclid=IwAR21MoF2yeZWshuXywCMP97iM_TSFTdI_gboOz4tLQlJF6Exrn8Gik9UlHs)
-6. [Tensorflow Lite](https://www.tensorflow.org/lite/guide)
+6. [Tensorflow to TensorRT with Onnx](https://github.com/riotu-lab/tf2trt_with_onnx)
+7. [Tensorflow Lite](https://www.tensorflow.org/lite/guide)
