@@ -4,12 +4,12 @@ Welcome to the Face Recognition End to End System, a powerful solution that comb
 ## System Requirements
 - python>=3.9 (Recommend 3.9.13)
 - opencv-python
-- numpy==1.23.1
+- numpy==1.23.1 (fix booling type)
 - scipy
 - tf_slim
 - scikit-learn
 - scikit-image
-- pycuda
+- pycuda (Require cuda, python-dev in the OS)
 - tensorflow([and-cuda] optional)
 ## Running Guide
 1. Save images of the individuals you want to recognize in face_db folder. Ensure that each image contains only one person and is named using the person's label, e.g., "Sunday.jpg."
