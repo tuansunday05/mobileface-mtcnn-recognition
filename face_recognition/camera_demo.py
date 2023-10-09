@@ -78,6 +78,9 @@ def load_faces(faces_dir, mtcnn_detector):
             embeddings = tf.get_default_graph().get_tensor_by_name("embeddings:0")
 
             for root, dirs, files in os.walk(faces_dir):
+                files.remove('.gitignore')
+                if('.DS_Store' in files): # macos
+                    files.remove('.DS_Store')
                 for file in files:
                     input_image = cv2.imread(os.path.join(root, file))
                     faces, landmarks = mtcnn_detector.detect(input_image)

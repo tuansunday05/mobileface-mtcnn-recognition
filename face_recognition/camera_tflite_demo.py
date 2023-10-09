@@ -65,11 +65,14 @@ def load_faces(faces_dir, mtcnn_detector, interpreter = None):
     face_db = []
     with tf.Graph().as_default():
     
-        inputs_placeholder = tf.get_default_graph()#.get_tensor_by_name("input:0")
+        inputs_placeholder = tf.get_default_graph()
         input_details = interpreter.get_input_details()
         output_details = interpreter.get_output_details()
 
         for root, dirs, files in os.walk(faces_dir):
+            files.remove('.gitignore')
+            if('.DS_Store' in files): # macos
+                files.remove('.DS_Store')
             for file in files:
                 input_image = cv2.imread(os.path.join(root, file))
                 faces, landmarks = mtcnn_detector.detect(input_image)

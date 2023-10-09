@@ -16,8 +16,8 @@ from Detection.MtcnnDetector import MtcnnDetector
 from Detection.detector import Detector
 from Detection.fcn_detector import FcnDetector
 import tensorflow.compat.v1 as tf
-from ConvertTensorRT import engine as eng
-import inference as inf
+from convert_trt import engine as eng
+from utils import inference as inf
 import tensorrt as trt 
 
 tf.disable_v2_behavior()
@@ -76,6 +76,9 @@ def load_faces(faces_dir, mtcnn_detector, engine = None):
         with engine:
             inputs_placeholder = tf.get_default_graph()#.get_tensor_by_name("input:0")
             for root, dirs, files in os.walk(faces_dir):
+                files.remove('.gitignore')
+                if('.DS_Store' in files): # macos
+                    files.remove('.DS_Store')
                 for file in files:
                     input_image = cv2.imread(os.path.join(root, file))
                     faces, landmarks = mtcnn_detector.detect(input_image)
