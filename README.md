@@ -1,5 +1,5 @@
-# Face Recognition End to End System
-Welcome to the Face Recognition End to End System, a powerful solution that combines the capabilities of MTCNN and MobileFacenet models using TensorFlow. This system is designed for seamless face detection and recognition, with support for both GPU and CPU processing. Additionally, it offers features for converting models into TensorRT runtime and TensorFlow Lite format, enabling easy testing and deployment on edge devices.
+# Real Time Face Recognition Formats
+Real Time Face Recognition Formats, a powerful solution that combines the capabilities of MTCNN and MobileFacenet models using TensorFlow. This system is designed for seamless face detection and recognition, with support for both GPU and CPU processing in variety of formats. It offers features for converting models from Tensorflow native into TensorRT runtime and TensorFlow Lite format, enabling easy testing and deployment on edge devices.
 
 ## System Requirements
 - python>=3.9 (Recommend 3.9.13)
