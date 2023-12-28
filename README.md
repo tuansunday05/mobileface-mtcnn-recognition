@@ -17,13 +17,13 @@ Real Time Face Recognition Formats, a powerful solution that combines the capabi
 3. python camera_...demo.py
 
 ## Performance
-System specification: Xeon E3 1240, 16gb, GTX 1070
+System specification: Xeon E3 1241v3, 16gb, GTX 1070
 
 | Run type |  GPU  |  CPU  |  TRT  |  TFLite  |
 | -------- | ----- | ----- | ----- | -------- |
 |   FPS    | 50-60 | 40-50 | 50-60 |  30-40   |
-|   Uisng GPU (%)  |  20-25  |    ~    |  23-28  |    ~    |  
-|   Uisng CPU (%)  |  15-20  |  35-40  |  20-25  |  10-15  |  
+|   Using GPU (%)  |  20-25  |    ~    |  23-28  |    ~    |  
+|   Using CPU (%)  |  15-20  |  35-40  |  20-25  |  10-15  |  
 
 
 ## Referencess
